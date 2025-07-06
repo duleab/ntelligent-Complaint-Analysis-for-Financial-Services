@@ -1,0 +1,165 @@
+name: CI/CD Pipeline for RAG Complaint Analysis System
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pytest pytest-cov flake8
+    
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Test with pytest
+      run: |
+        pytest --cov=src tests/
+
+  data_pipeline:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Download and process data
+      run: |
+        # Create necessary directories
+        mkdir -p data/raw data/processed vector_store
+        
+        # Run the data pipeline with a small sample size for CI/CD
+        python run_pipeline.py --sample-size 1000 --vector-store-type faiss
+    
+    - name: Cache vector store
+      uses: actions/cache@v2
+      with:
+        path: vector_store
+        key: vector-store-${{ github.sha }}
+        restore-keys: |
+          vector-store-
+    
+  build:
+    needs: [test, data_pipeline]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Build package
+      run: |
+        python -m build
+    
+    - name: Store build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install streamlit
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist/
+        
+    - name: Restore vector store from cache
+      uses: actions/cache@v2
+      with:
+        path: vector_store
+        key: vector-store-${{ github.sha }}
+        restore-keys: |
+          vector-store-
+          
+    - name: Create necessary directories
+      run: |
+        mkdir -p data/raw data/processed
+    
+    # Deploy to Streamlit Cloud
+    - name: Deploy to Streamlit Cloud
+      env:
+        STREAMLIT_API_TOKEN: ${{ secrets.STREAMLIT_API_TOKEN }}
+      run: |
+        if [ -z "$STREAMLIT_API_TOKEN" ]; then
+          echo "STREAMLIT_API_TOKEN is not set. Skipping deployment to Streamlit Cloud."
+          echo "To deploy to Streamlit Cloud, add STREAMLIT_API_TOKEN to your repository secrets."
+          exit 0
+        fi
+        
+        # Install Streamlit CLI
+        pip install streamlit-cloud-cli
+        
+        # Deploy to Streamlit Cloud
+        streamlit_cloud deploy \
+          --app-name "creditrust-complaint-analysis" \
+          --entrypoint "src/app.py" \
+          --repository "$GITHUB_REPOSITORY" \
+          --branch "$GITHUB_REF_NAME"
+        
+        echo "Deployed to Streamlit Cloud: https://creditrust-complaint-analysis.streamlit.app"
+        
+        # Note: This is a simplified example. In a real scenario, you might need to
+        # configure additional settings or use a different deployment approach.
