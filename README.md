@@ -64,26 +64,7 @@ The system uses Retrieval-Augmented Generation (RAG) to allow internal users to 
 │   │   └── create_vector_store.py # Vector store creation
 │   ├── models/                 # Model-related code
 │   │   └── __init__.py
-│   ├── rag/                    # RAG pipeline components
-│   │   ├── __init__.py
-│   │   ├── retriever.py        # Vector retrieval functionality
-│   │   ├── generator.py        # Answer generation with LLM
-│   │   └── rag_pipeline.py     # Complete RAG pipeline
-│   ├── utils/                  # Utility functions
-│   │   ├── __init__.py
-│   │   └── visualization.py    # Data visualization utilities
-│   ├── app.py                  # Main application entry point
-│   ├── streamlit_app.py        # Streamlit UI implementation
-│   └── README_APP.md           # Application-specific documentation
-├── vector_store/               # Vector database storage
-├── tests/                      # Unit tests
-│   ├── __init__.py
-│   ├── test_rag_pipeline.py    # Tests for RAG components
-│   └── test_data_processing.py # Tests for data processing
-└── .github/                    # GitHub specific files
-    └── workflows/              # CI/CD workflows
-        └── ci_cd.yml           # CI/CD workflow file
-```
+
 
 ## Setup and Installation
 
@@ -191,7 +172,3 @@ Please follow these guidelines when contributing to the project:
 3. Write unit tests for new functionality
 4. Submit pull requests for review
 5. Ensure CI/CD pipeline passes before merging
-
-## License
-
-[Specify License]
