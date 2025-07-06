@@ -1,0 +1,34 @@
+# Core dependencies
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.2.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# NLP and embedding
+transformers>=4.30.0
+sentence-transformers>=2.2.0
+torch>=2.0.0
+
+# Vector database
+chromadb>=0.4.0
+faiss-cpu>=1.7.0
+
+# RAG and LLM
+langchain>=0.0.267
+langchain-community>=0.0.10
+openai>=1.0.0
+huggingface-hub>=0.16.0
+
+# Web UI
+gradio>=3.40.0
+streamlit>=1.25.0
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.65.0
+jupyter>=1.0.0
+notebook>=6.5.0
+
+# Testing
+pytest>=7.0.0
