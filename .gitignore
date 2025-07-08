@@ -110,3 +110,44 @@ logs/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# ... existing code ...
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Node modules (if you use any JavaScript)
+node_modules/
+
+# Jupyter notebook temp files
+.ipynb_checkpoints/
+
+# Python virtual environment
+__pypackages__/
+
+# Pytest
+.pytest_cache/
+pytest-env/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Sphinx documentation
+docs/_build/
+
+# Results and model outputs
+results/*
+!results/.gitkeep
+models/*
+!models/.gitkeep
+
+# Temporary data
+temp_data/
+
+# ... existing code ...
