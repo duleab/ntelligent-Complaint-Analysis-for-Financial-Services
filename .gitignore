@@ -151,3 +151,13 @@ models/*
 temp_data/
 
 # ... existing code ...
+
+simple_test.py
+simple_eda.py
+run_tests.py
+run_pipeline.py
+docs/
+Intelligent Complaint Analysis for Finan.md
+Interim Report W6.pdf
+Interim Report.md
+eda_output.txt
